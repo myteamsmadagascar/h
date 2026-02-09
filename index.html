@@ -1,0 +1,1661 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>CRM + Chat + Reporting VICIdial — Madagascar Télétravail</title>
+  <a href="reporting.html" class="btn-reporting">
+  📊 Reporting
+</a>
+
+<style>
+.btn-reporting{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 16px;
+  border-radius:12px;
+  font-weight:900;
+  text-decoration:none;
+  color:#02111f;
+  background:linear-gradient(90deg,#00c2ff,#22c55e);
+  box-shadow:0 12px 30px rgba(0,0,0,.18);
+}
+.btn-reporting:hover{
+  filter:brightness(1.05);
+}
+</style>
+  <meta name="theme-color" content="#0b57d0" />
+
+  <!-- ✅ ADMIN -->
+  <script>
+    const ADMIN_PASSWORD = "admin2026";
+  </script>
+
+  <!-- ✅ SheetJS (import/export Excel) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <style>
+    :root{
+      --bg:#f6f9ff; --card:#fff; --text:#0b1220; --muted:rgba(11,18,32,.62);
+      --stroke:rgba(15,23,42,.10); --shadow:0 18px 60px rgba(0,0,0,.08);
+      --blue:#0b57d0; --cyan:#00c2ff; --gold:#d4af37; --red:#ff2d55; --green:#16a34a; --orange:#ff8a00; --purple:#7c3aed; --gray:#64748b;
+      --r:22px;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; color:var(--text);
+      background:
+        radial-gradient(900px 520px at 10% 0%, rgba(11,87,208,.12), transparent 60%),
+        radial-gradient(900px 520px at 90% 20%, rgba(0,194,255,.10), transparent 60%),
+        linear-gradient(180deg,#ffffff 0%, var(--bg) 38%, #ffffff 100%);
+      min-height:100vh;
+    }
+    header{
+      position:sticky; top:0; z-index:20;
+      background:rgba(255,255,255,.84); backdrop-filter:blur(14px);
+      border-bottom:1px solid var(--stroke);
+    }
+    .topbar{
+      max-width:1200px; margin:0 auto; padding:12px 14px;
+      display:flex; gap:10px; align-items:center; justify-content:space-between;
+    }
+    .brand{display:flex; gap:10px; align-items:center}
+    .logoImg{
+      width:52px; height:42px; border-radius:16px; object-fit:contain; background:#fff;
+      border:1px solid rgba(15,23,42,.10); box-shadow:0 12px 30px rgba(11,87,208,.12); padding:7px;
+    }
+    .title{line-height:1.05}
+    .title b{display:block; font-size:15px}
+    .title span{display:block; font-size:12px; color:var(--muted)}
+    .pill{
+      font-size:12px; font-weight:950;
+      padding:8px 10px; border-radius:999px;
+      background:rgba(11,87,208,.08);
+      border:1px solid rgba(11,87,208,.16);
+      color:#06337a; white-space:nowrap;
+    }
+    .wrap{max-width:1200px; margin:0 auto; padding:14px 14px 110px}
+    .card{
+      background:rgba(255,255,255,.94);
+      border:1px solid var(--stroke);
+      border-radius:var(--r);
+      box-shadow:var(--shadow);
+      padding:14px;
+    }
+    .hidden{display:none !important}
+    .btn{
+      border:0; border-radius:16px; padding:11px 12px;
+      font-weight:950; cursor:pointer; transition:.15s ease;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      user-select:none; text-decoration:none;
+    }
+    .btn:active{transform:scale(.99)}
+    .btn.primary{background:linear-gradient(135deg,var(--blue),#2f7bff); color:#fff; box-shadow:0 14px 32px rgba(11,87,208,.20)}
+    .btn.ghost{background:#fff; border:1px solid var(--stroke); color:var(--text)}
+    .btn.danger{background:linear-gradient(135deg,var(--red),#ff6b8a); color:#fff}
+    .btn.warn{background:linear-gradient(135deg,var(--orange),#ffc14a); color:#211100}
+    .btn.small{padding:9px 10px; border-radius:14px; font-size:13px}
+    .btn:disabled{opacity:.55; cursor:not-allowed}
+
+    .input, select, textarea{
+      width:100%; padding:12px 12px; border-radius:16px; border:1px solid var(--stroke);
+      background:#fff; outline:none; font-size:14px;
+      box-shadow:0 10px 22px rgba(0,0,0,.04);
+    }
+    textarea{min-height:92px; resize:vertical}
+    label{font-size:12px; color:var(--muted); display:block; margin:10px 0 6px}
+
+    .two{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+    .three{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px}
+    @media (max-width:980px){ .three{grid-template-columns:1fr} }
+    @media (max-width:560px){ .two{grid-template-columns:1fr} }
+
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{
+      border:1px solid var(--stroke); background:#fff; border-radius:999px;
+      padding:9px 12px; font-size:12px; font-weight:950; cursor:pointer;
+      box-shadow:0 10px 22px rgba(0,0,0,.04);
+    }
+    .chip.on{border-color:rgba(11,87,208,.30); box-shadow:0 14px 35px rgba(11,87,208,.10)}
+    .divider{height:1px; background:rgba(15,23,42,.10); margin:10px 0}
+    .hint{font-size:12px; color:var(--muted)}
+    .muted{color:var(--muted)}
+
+    .list{display:grid; gap:12px; margin-top:10px}
+    .row{
+      border:1px solid var(--stroke); background:rgba(255,255,255,.97);
+      border-radius:24px; padding:12px; box-shadow:0 16px 55px rgba(0,0,0,.07);
+      position:relative; overflow:hidden;
+    }
+    .row::before{
+      content:""; position:absolute; inset:-2px;
+      background:radial-gradient(720px 260px at 10% 0%, rgba(11,87,208,.11), transparent 62%);
+      pointer-events:none; opacity:.75;
+    }
+    .row > *{position:relative}
+    .rowTop{display:flex; gap:10px; align-items:flex-start; justify-content:space-between}
+    .row h3{margin:0; font-size:15px}
+    .meta{font-size:12px; color:var(--muted); margin-top:3px}
+    .badges{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px}
+    .badge{
+      font-size:11px; font-weight:950; padding:6px 10px; border-radius:999px;
+      background:#fff; border:1px solid var(--stroke);
+    }
+    .badge.blue{border-color:rgba(11,87,208,.22); background:rgba(11,87,208,.08); color:#06337a}
+    .badge.green{border-color:rgba(22,163,74,.25); background:rgba(22,163,74,.10); color:#0a3d1a}
+    .badge.red{border-color:rgba(255,45,85,.25); background:rgba(255,45,85,.10); color:#5a0014}
+    .badge.orange{border-color:rgba(255,138,0,.28); background:rgba(255,138,0,.12); color:#5a2a00}
+    .badge.gray{border-color:rgba(100,116,139,.22); background:rgba(100,116,139,.10); color:#223044}
+    .badge.purple{border-color:rgba(124,58,237,.24); background:rgba(124,58,237,.10); color:#2f0b63}
+
+    .rowActions{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px}
+    .rowActions .btn{flex:1; min-width:160px}
+
+    .selBox{display:flex; gap:10px; align-items:center; font-size:12px; color:var(--muted); font-weight:950}
+    .cb{width:20px; height:20px; accent-color:var(--blue);}
+
+    .bottomNav{
+      position:fixed; left:0; right:0; bottom:0; z-index:20;
+      background:rgba(255,255,255,.88); backdrop-filter:blur(16px);
+      border-top:1px solid var(--stroke);
+      padding:10px 12px env(safe-area-inset-bottom);
+    }
+    .navIn{max-width:1200px; margin:0 auto; display:flex; gap:10px; flex-wrap:wrap}
+    .navIn button,.navIn a{flex:1; min-width:170px}
+
+    .modal{
+      position:fixed; inset:0; z-index:30; background:rgba(0,0,0,.45);
+      display:flex; align-items:flex-end; justify-content:center; padding:12px;
+    }
+    .sheet{
+      width:100%; max-width:1200px; background:#fff; border-radius:26px;
+      border:1px solid rgba(15,23,42,.12); box-shadow:0 36px 120px rgba(0,0,0,.45);
+      max-height:92vh; overflow:auto; padding:12px;
+    }
+    .sheetHead{display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap:wrap}
+    .sheetHead h2{margin:0; font-size:16px}
+
+    .toast{
+      position:fixed; left:50%; bottom:104px; transform:translateX(-50%);
+      background:rgba(11,18,32,.92); border:1px solid rgba(255,255,255,.16);
+      color:#fff; padding:10px 12px; border-radius:14px;
+      font-size:13px; font-weight:950; z-index:40; display:none; max-width:92vw;
+    }
+
+    /* Chat */
+    .chatWrap{display:grid; gap:10px}
+    .chatLog{
+      height:48vh; min-height:340px;
+      border:1px solid var(--stroke);
+      border-radius:18px;
+      padding:10px;
+      overflow:auto;
+      background:linear-gradient(180deg,#fff, rgba(0,0,0,.02));
+    }
+    .msg{
+      border:1px solid rgba(15,23,42,.10);
+      border-radius:16px;
+      padding:10px;
+      margin:8px 0;
+      background:#fff;
+      box-shadow:0 10px 22px rgba(0,0,0,.04);
+      position:relative;
+    }
+    .msgTop{display:flex; justify-content:space-between; gap:10px; align-items:center}
+    .who{font-weight:950; font-size:13px}
+    .time{font-size:11px; color:rgba(11,18,32,.56)}
+    .bubble{margin-top:6px; font-size:13px; white-space:pre-wrap}
+    .replyBox{
+      font-size:11px; color:rgba(11,18,32,.72);
+      border-left:3px solid var(--blue);
+      margin-top:6px;
+      background:rgba(11,87,208,.06);
+      border-radius:10px;
+      padding:8px 10px;
+    }
+    .msgBtns{margin-top:8px; display:flex; gap:6px; flex-wrap:wrap}
+    .attWrap{margin-top:8px; display:grid; gap:8px}
+    .attImg{max-width:100%; border-radius:14px; border:1px solid rgba(15,23,42,.10)}
+    .attAudio{width:100%}
+    .badgeDot{
+      position:absolute; top:-6px; right:-6px;
+      background:#ff2d55; color:#fff;
+      border-radius:999px; font-size:11px;
+      padding:3px 7px; font-weight:950;
+      border:2px solid #fff;
+      display:none;
+    }
+
+    /* Login */
+    .loginWrap{max-width:520px;margin:18px auto}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:12px;background:rgba(11,87,208,.08);border:1px solid rgba(11,87,208,.14);padding:2px 6px;border-radius:8px}
+
+    /* Mini stats cards */
+    .mini3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+    @media (max-width:980px){ .mini3{grid-template-columns:1fr} }
+    .miniCard{border:1px solid var(--stroke);border-radius:18px;padding:12px;background:linear-gradient(180deg,#fff, rgba(11,87,208,.03));box-shadow:0 10px 25px rgba(0,0,0,.05)}
+    .miniCard b{display:block}
+    .bigNum{font-weight:950;font-size:22px;margin-top:6px}
+  </style>
+</head>
+
+<body>
+<header>
+  <div class="topbar">
+    <div class="brand">
+      <img class="logoImg" src="logo.png" alt="Madagascar Télétravail" onerror="this.style.display='none'"/>
+      <div class="title">
+        <b>CRM Téléprospection B2C</b>
+        <span>Qualification fichiers • Chat • Reporting VICIdial</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end">
+      <span id="countPill" class="pill">0 prospect(s)</span>
+
+      <a href="https://polecontact.com/Epargneaudit.html" target="_blank" class="btn ghost small">📋 Script</a>
+
+      <button id="btnChat" class="btn ghost small" style="position:relative">
+        💬 Équipe
+        <span id="chatBadge" class="badgeDot">0</span>
+      </button>
+
+      <button id="btnUser" class="btn ghost small">👤 Connexion</button>
+      <button id="btnLogoutTop" class="btn danger small hidden">🚪 Déconnexion</button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- LOGIN -->
+  <section id="loginCard" class="card loginWrap">
+    <b style="font-weight:950">Connexion</b>
+    <div class="hint" style="margin-top:6px">
+      Choisissez un rôle + un nom affiché. Mot de passe seulement pour <b>Admin</b>.
+    </div>
+
+    <div class="two" style="margin-top:10px">
+      <div>
+        <label>Rôle</label>
+        <select id="role" class="input">
+          <option>TA1</option>
+          <option>TA2</option>
+          <option>TA3</option>
+          <option>Superviseur</option>
+          <option>Client</option>
+          <option value="Admin">Admin</option>
+          <option value="Custom">Nom libre…</option>
+        </select>
+      </div>
+      <div>
+        <label>Nom affiché</label>
+        <input id="name" class="input" placeholder="Ex: Naomi / Agent 1 ..." />
+      </div>
+    </div>
+
+    <div id="customRoleBox" class="hidden">
+      <label>Nom du rôle (libre)</label>
+      <input id="customRole" class="input" placeholder="Ex: Quality / Coach ..." />
+    </div>
+
+    <div id="adminBox" class="hidden">
+      <label>Mot de passe Admin</label>
+      <input id="adminPass" type="password" class="input" placeholder="(obligatoire pour Admin)" />
+      <div class="hint">Mot de passe dans le code : <b>ADMIN_PASSWORD</b></div>
+    </div>
+
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+      <button id="btnLogin" class="btn primary" style="flex:1">Se connecter</button>
+      <button id="btnLogout" class="btn danger hidden" style="flex:1">Se déconnecter</button>
+    </div>
+
+    <div id="loginMsg" class="hint" style="margin-top:10px"></div>
+  </section>
+
+  <!-- CRM -->
+  <section id="crmCard" class="card hidden">
+
+    <!-- ✅ REPORTING VICIDIAL intégré -->
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:space-between">
+        <div>
+          <b style="font-weight:950">📊 Reporting VICIdial (import direct)</b>
+          <div class="hint">Importez le CSV → récap visible immédiatement (sans redéploiement).</div>
+        </div>
+        <span id="vicLast" class="pill">Aucun reporting chargé</span>
+      </div>
+
+      <div class="two" style="margin-top:10px">
+        <div>
+          <label>CSV VICIdial</label>
+          <input id="vicFile" type="file" class="input" accept=".csv" />
+        </div>
+        <div>
+          <label>Filtre (optionnel)</label>
+          <div class="two">
+            <input id="vicDay" class="input" type="date" />
+            <input id="vicMonth" class="input" type="month" />
+          </div>
+          <div class="hint">Laissez vide = tout le fichier. Jour OU mois (pas obligatoire).</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px">
+        <button id="btnVicImport" class="btn primary small">📥 Import CSV</button>
+        <button id="btnVicReset" class="btn ghost small">♻ Reset</button>
+      </div>
+
+      <div class="mini3" style="margin-top:12px">
+        <div class="miniCard"><b>Total appels</b><div id="vTotal" class="bigNum">0</div></div>
+        <div class="miniCard"><b>RDV OK</b><div id="vRDV" class="bigNum">0</div></div>
+        <div class="miniCard"><b>Qualifié partiel</b><div id="vQualif" class="bigNum">0</div></div>
+      </div>
+
+      <div class="divider"></div>
+      <b style="font-weight:950">Statuts (compteurs)</b>
+      <div id="vStats" class="card" style="margin-top:8px"></div>
+
+      <div class="divider"></div>
+      <b style="font-weight:950">✅ RDV OK (liste – doublons supprimés)</b>
+      <div id="vRDVList" class="card" style="margin-top:8px"></div>
+      <div class="hint" style="margin-top:8px">RDV OK est le seul statut dont on garde les lignes (pour crédibilité). Le reste = comptage.</div>
+    </div>
+
+    <!-- ✅ Recherche / filtres prospects -->
+    <div class="three">
+      <div>
+        <label>Recherche</label>
+        <input id="q" class="input" placeholder="Nom, ville, tel, email…" />
+      </div>
+      <div>
+        <label>Statut</label>
+        <select id="statusFilter" class="input"></select>
+      </div>
+      <div>
+        <label>Filtres rapides</label>
+        <div class="chips">
+          <button class="chip" id="chipRecall">À rappeler</button>
+          <button class="chip" id="chipRdv">RDV OK</button>
+          <button class="chip" id="chipDone">Traité</button>
+          <button class="chip" id="chipAll">Tout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="two">
+      <div class="selBox">
+        <input id="cbAll" type="checkbox" class="cb"/>
+        <span>Tout sélectionner (liste)</span>
+      </div>
+
+      <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap">
+        <button id="btnAdd" class="btn primary small">+ Ajouter</button>
+        <button id="btnImport" class="btn ghost small">📥 Importer</button>
+        <button id="btnExport" class="btn ghost small">📤 Exporter Excel</button>
+        <button id="btnDedup" class="btn warn small">🧹 Supprimer doublons</button>
+        <button id="btnDeleteSel" class="btn danger small" disabled>🗑 Supprimer sélection</button>
+        <button id="btnWipeDB" class="btn danger small hidden">🧨 Tout supprimer (BDD)</button>
+      </div>
+    </div>
+
+    <div class="hint" style="margin-top:8px">
+      Stockage local navigateur. Multi-appareils réel (TA1/TA2/Admin sur plusieurs téléphones) = Firebase/serveur (plus tard).
+    </div>
+
+    <div class="list" id="list"></div>
+    <div id="empty" class="hint hidden" style="text-align:center;margin-top:18px">Aucun résultat.</div>
+  </section>
+
+</div>
+
+<!-- bottom nav -->
+<div id="bottomNav" class="bottomNav hidden">
+  <div class="navIn">
+    <button class="btn ghost small" id="navTop">⬆ Haut</button>
+    <button class="btn primary small" id="navAdd2">+ Prospect</button>
+    <a class="btn ghost small" href="https://polecontact.com/Epargneaudit.html" target="_blank">📋 Script</a>
+    <button class="btn ghost small" id="navChat2" style="position:relative">
+      💬 Écrire à l'équipe
+      <span id="chatBadge2" class="badgeDot">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+<!-- MODAL prospect -->
+<div id="modal" class="modal hidden" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHead">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn ghost small" id="btnBackProspect">⬅ Retour</button>
+        <h2 id="modalTitle">Ajouter un prospect</h2>
+      </div>
+      <button class="btn ghost small" id="btnClose">Fermer</button>
+    </div>
+    <div class="divider"></div>
+
+    <div class="two">
+      <div><label>Nom</label><input id="f_nom" class="input" placeholder="(optionnel)" /></div>
+      <div><label>Prénom</label><input id="f_prenom" class="input" placeholder="(optionnel)" /></div>
+
+      <div><label>Mobile</label><input id="f_mobile" class="input" inputmode="tel" placeholder="(optionnel)" /></div>
+      <div><label>Email</label><input id="f_email" class="input" type="email" placeholder="(optionnel)" /></div>
+
+      <div><label>Ville</label><input id="f_ville" class="input" placeholder="(optionnel)" /></div>
+      <div><label>Adresse</label><input id="f_adresse" class="input" placeholder="(optionnel)" /></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="two">
+      <div>
+        <label>Statut</label>
+        <select id="f_statut" class="input"></select>
+      </div>
+      <div>
+        <label>Montant repère (texte libre)</label>
+        <input id="f_montant" class="input" placeholder=".." />
+      </div>
+    </div>
+
+    <div id="recallBox" class="card" style="margin-top:10px;display:none">
+      <b style="font-weight:950">Rappel</b>
+      <div class="two">
+        <div>
+          <label>Date/heure de rappel</label>
+          <input id="f_rappel_date" class="input" type="datetime-local" />
+        </div>
+        <div>
+          <label>Autre numéro (si demandé)</label>
+          <input id="f_autre_num" class="input" placeholder="(optionnel)" />
+        </div>
+      </div>
+      <div class="hint">Ce bloc s’affiche si statut = “À rappeler”.</div>
+    </div>
+
+    <label>RDV (texte libre)</label>
+    <input id="f_rdv" class="input" placeholder="Ex: samedi matin / demain 15h…" />
+
+    <label>Questionnaire / texte à écrire</label>
+    <textarea id="f_questionnaire" class="input" placeholder="Écrire ici le questionnaire / réponses…"></textarea>
+
+    <label>Remarque</label>
+    <textarea id="f_remarque" class="input" placeholder="(optionnel)"></textarea>
+
+    <div class="divider"></div>
+
+    <div class="rowActions">
+      <button id="btnSave" class="btn primary">💾 Enregistrer</button>
+      <button id="btnDelete" class="btn danger hidden">🗑 Supprimer</button>
+    </div>
+
+    <div id="formMsg" class="hint" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- MODAL import prospects -->
+<div id="importModal" class="modal hidden" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHead">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn ghost small" id="btnBackImport">⬅ Retour</button>
+        <h2>Import prospects (Excel / CSV / TXT)</h2>
+      </div>
+      <button class="btn ghost small" id="btnImportClose">Fermer</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="two">
+      <div>
+        <label>Fichier</label>
+        <input id="importFile" type="file" class="input" accept=".xlsx,.xls,.csv,.txt"/>
+      </div>
+      <div>
+        <label>TXT/CSV : séparateur</label>
+        <select id="txtSep" class="input">
+          <option value="auto">Auto</option>
+          <option value=";">;</option>
+          <option value=",">,</option>
+          <option value="|">|</option>
+          <option value="\t">Tab</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="hint" style="margin-top:10px">
+      1) Choisissez fichier → 2) mapping colonnes → 3) cochez les lignes → 4) importer.
+    </div>
+
+    <div id="mapGrid" class="card" style="margin-top:10px"></div>
+
+    <div class="divider"></div>
+
+    <div class="two">
+      <button class="btn ghost" id="btnPickAllRows">✅ Tout sélectionner (lignes)</button>
+      <button class="btn ghost" id="btnUnpickAllRows">⛔ Tout décocher</button>
+    </div>
+
+    <div id="previewWrap" class="card" style="margin-top:10px">
+      <b style="font-weight:950">Aperçu (lignes)</b>
+      <div class="hint">Cochez/décochez puis cliquez “Importer maintenant”.</div>
+      <div id="previewTable" style="overflow:auto;margin-top:10px"></div>
+    </div>
+
+    <div class="divider"></div>
+
+    <button class="btn primary" id="btnImportNow">📥 Importer maintenant</button>
+    <div id="importMsg" class="hint" style="margin-top:10px"></div>
+  </div>
+</div>
+
+<!-- MODAL chat -->
+<div id="chatModal" class="modal hidden" aria-hidden="true">
+  <div class="sheet">
+    <div class="sheetHead">
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn ghost small" id="btnBackChat">⬅ Retour</button>
+        <h2>💬 Chat équipe</h2>
+      </div>
+      <button class="btn ghost small" id="btnChatClose">Fermer</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <div class="chatWrap">
+      <div id="chatLog" class="chatLog"></div>
+
+      <div class="two">
+        <div>
+          <label>Message</label>
+          <textarea id="chatTxt" class="input" placeholder="Écrire…"></textarea>
+          <div id="replyPreview" class="replyBox hidden"></div>
+        </div>
+        <div>
+          <label>Image / Audio (optionnel)</label>
+          <input id="chatFile" type="file" class="input" accept="image/*,audio/*" />
+          <div class="hint">Astuce : long clic / double clic sur un message → répondre. ✏ Modifier et 🗑 Supprimer selon droits.</div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button id="btnSend" class="btn primary">Envoyer</button>
+        <button id="btnCancelReply" class="btn ghost">Annuler réponse</button>
+        <button id="btnAdminClearChat" class="btn danger hidden">Admin : tout supprimer</button>
+      </div>
+      <div class="hint">Local navigateur : pour un vrai chat multi-appareils, il faudra brancher Firebase/serveur.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================
+   STORAGE KEYS
+========================= */
+const K_USER = "crmUser_v1";
+const K_ROLE = "crmRole_v1";
+const K_PROS = "crmProspects_v1";
+const K_CHAT = "crmChat_v1";
+const K_READ = "crmChatRead_v1"; // par rôle
+const K_LAST_VIC = "crmVicLast_v1";
+
+/* =========================
+   UTIL
+========================= */
+const $ = (id)=>document.getElementById(id);
+const uid = ()=> Math.floor(Date.now() + Math.random()*9999);
+function nowStr(){ return new Date().toLocaleString(); }
+function toastMsg(t){
+  const el = $("toast");
+  el.innerText = t;
+  el.style.display="block";
+  clearTimeout(window.__toastT);
+  window.__toastT = setTimeout(()=>el.style.display="none", 2200);
+}
+function safeJSONParse(s, fallback){
+  try{ return JSON.parse(s||""); }catch{ return fallback; }
+}
+function save(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
+function load(key, fallback){ return safeJSONParse(localStorage.getItem(key), fallback); }
+
+/* =========================
+   SESSION
+========================= */
+let USER = localStorage.getItem(K_USER) || "";
+let ROLE = localStorage.getItem(K_ROLE) || "";
+let isAdmin = ()=> ROLE==="Admin";
+
+/* =========================
+   PROSPECTS
+========================= */
+const STATUSES = [
+  "Nouveau",
+  "Sonnerie libre",
+  "Hors cible",
+  "Pas intéressé",
+  "Raccroché au nez",
+  "À rappeler",
+  "Répondeur",
+  "Injoignable permanent",
+  "Qualifié partiel",
+  "RDV OK",
+  "Prospect potentiel",
+  "Autre",
+  "Traité"
+];
+
+let DB = load(K_PROS, []);
+let qText = "";
+let statusSel = "";
+let chip = "all";
+let selected = new Set();
+let editingId = null;
+
+/* =========================
+   CHAT
+========================= */
+let CHAT = load(K_CHAT, []);
+let replyTo = null; // {id, user, text}
+function readMap(){
+  const m = load(K_READ, {});
+  return m;
+}
+function setRead(role, ts){
+  const m = readMap();
+  m[role] = ts;
+  save(K_READ, m);
+}
+function lastRead(role){
+  const m = readMap();
+  return m[role] || 0;
+}
+
+/* =========================
+   VICIDIAL REPORTING (compte + conserve RDV OK)
+========================= */
+const VIC_MAP = {
+  SALE:"RDV OK",
+  APPT:"RDV OK",
+  QUALIF:"Qualifié partiel",
+  CALLBK:"À rappeler",
+  NA:"Pas intéressé",
+  DROP:"Raccroché au nez",
+  VM:"Répondeur",
+  DC:"Injoignable permanent"
+};
+
+/* =========================
+   INIT
+========================= */
+document.addEventListener("DOMContentLoaded", ()=>{
+  // status selects
+  fillSelect($("statusFilter"), ["(Tous)"].concat(STATUSES));
+  fillSelect($("f_statut"), STATUSES);
+
+  // login UI events
+  $("role").addEventListener("change", onRoleChange);
+  $("btnLogin").addEventListener("click", doLogin);
+  $("btnLogout").addEventListener("click", doLogout);
+  $("btnLogoutTop").addEventListener("click", doLogout);
+  $("btnUser").addEventListener("click", ()=>scrollTo({top:0,behavior:"smooth"}));
+
+  // CRM events
+  $("q").addEventListener("input", ()=>{ qText=$("q").value.trim().toLowerCase(); renderList(); });
+  $("statusFilter").addEventListener("change", ()=>{ statusSel=$("statusFilter").value; if(statusSel==="(Tous)") statusSel=""; renderList(); });
+
+  $("chipRecall").addEventListener("click", ()=>setChip("recall"));
+  $("chipRdv").addEventListener("click", ()=>setChip("rdv"));
+  $("chipDone").addEventListener("click", ()=>setChip("done"));
+  $("chipAll").addEventListener("click", ()=>setChip("all"));
+
+  $("cbAll").addEventListener("change", toggleAllInView);
+
+  $("btnAdd").addEventListener("click", ()=>openProspect(null));
+  $("navAdd2").addEventListener("click", ()=>openProspect(null));
+  $("btnClose").addEventListener("click", closeProspect);
+  $("btnBackProspect").addEventListener("click", closeProspect);
+
+  $("btnSave").addEventListener("click", saveProspect);
+  $("btnDelete").addEventListener("click", deleteProspect);
+
+  $("btnImport").addEventListener("click", openImport);
+  $("btnImportClose").addEventListener("click", closeImport);
+  $("btnBackImport").addEventListener("click", closeImport);
+
+  $("btnExport").addEventListener("click", exportExcel);
+  $("btnDedup").addEventListener("click", dedupProspects);
+  $("btnDeleteSel").addEventListener("click", deleteSelected);
+  $("btnWipeDB").addEventListener("click", wipeAllProspects);
+
+  // import mapping events
+  $("importFile").addEventListener("change", handleImportFile);
+  $("btnPickAllRows").addEventListener("click", ()=>pickAllRows(true));
+  $("btnUnpickAllRows").addEventListener("click", ()=>pickAllRows(false));
+  $("btnImportNow").addEventListener("click", importNow);
+
+  // bottom nav
+  $("navTop").addEventListener("click", ()=>scrollTo({top:0,behavior:"smooth"}));
+
+  // chat
+  $("btnChat").addEventListener("click", openChat);
+  $("navChat2").addEventListener("click", openChat);
+  $("btnChatClose").addEventListener("click", closeChat);
+  $("btnBackChat").addEventListener("click", closeChat);
+  $("btnSend").addEventListener("click", sendChat);
+  $("btnCancelReply").addEventListener("click", clearReply);
+  $("btnAdminClearChat").addEventListener("click", adminClearChat);
+
+  // vicidial
+  $("btnVicImport").addEventListener("click", importVicidial);
+  $("btnVicReset").addEventListener("click", resetVicidial);
+
+  // restore session
+  applySessionUI();
+  renderList();
+  renderChatBadge();
+  restoreVicLast();
+});
+
+/* =========================
+   LOGIN
+========================= */
+function onRoleChange(){
+  const v = $("role").value;
+  $("customRoleBox").classList.toggle("hidden", v!=="Custom");
+  $("adminBox").classList.toggle("hidden", v!=="Admin");
+}
+function doLogin(){
+  let r = $("role").value;
+  let n = $("name").value.trim();
+  if(!n){ $("loginMsg").innerText="Veuillez renseigner un nom affiché."; return; }
+  if(r==="Custom"){
+    const cr = $("customRole").value.trim();
+    if(!cr){ $("loginMsg").innerText="Veuillez renseigner le rôle libre."; return; }
+    r = cr;
+  }
+  if(r==="Admin"){
+    const p = $("adminPass").value;
+    if(p!==ADMIN_PASSWORD){ $("loginMsg").innerText="Mot de passe Admin incorrect."; return; }
+  }
+  USER = n;
+  ROLE = r;
+  localStorage.setItem(K_USER, USER);
+  localStorage.setItem(K_ROLE, ROLE);
+  $("loginMsg").innerText="";
+  toastMsg("Connecté : "+USER+" ("+ROLE+")");
+  applySessionUI();
+  renderChatBadge();
+}
+function doLogout(){
+  localStorage.removeItem(K_USER);
+  localStorage.removeItem(K_ROLE);
+  USER=""; ROLE="";
+  toastMsg("Déconnecté");
+  applySessionUI();
+}
+function applySessionUI(){
+  const ok = !!(USER && ROLE);
+  $("loginCard").classList.toggle("hidden", ok);
+  $("crmCard").classList.toggle("hidden", !ok);
+  $("bottomNav").classList.toggle("hidden", !ok);
+  $("btnLogoutTop").classList.toggle("hidden", !ok);
+  $("btnLogout").classList.toggle("hidden", !ok);
+  $("btnWipeDB").classList.toggle("hidden", !(ok && isAdmin()));
+  $("btnAdminClearChat").classList.toggle("hidden", !(ok && isAdmin()));
+  if(ok) renderList();
+}
+
+/* =========================
+   PROSPECTS: RENDER
+========================= */
+function fillSelect(sel, arr){
+  sel.innerHTML = arr.map(x=>`<option>${escapeHtml(x)}</option>`).join("");
+}
+function setChip(which){
+  chip = which;
+  ["chipRecall","chipRdv","chipDone","chipAll"].forEach(id=>$(id).classList.remove("on"));
+  if(which==="recall") $("chipRecall").classList.add("on");
+  if(which==="rdv") $("chipRdv").classList.add("on");
+  if(which==="done") $("chipDone").classList.add("on");
+  if(which==="all") $("chipAll").classList.add("on");
+  renderList();
+}
+function matchesChip(p){
+  if(chip==="all") return true;
+  if(chip==="recall") return (p.statut||"")==="À rappeler";
+  if(chip==="rdv") return (p.statut||"")==="RDV OK";
+  if(chip==="done") return (p.statut||"")==="Traité";
+  return true;
+}
+function matchesFilter(p){
+  if(statusSel && (p.statut||"")!==statusSel) return false;
+  if(!matchesChip(p)) return false;
+  if(!qText) return true;
+  const hay = [
+    p.nom,p.prenom,p.mobile,p.email,p.ville,p.adresse,p.statut,p.montant,p.rdv,p.questionnaire,p.remarque
+  ].join(" ").toLowerCase();
+  return hay.includes(qText);
+}
+function viewList(){
+  return DB.filter(matchesFilter);
+}
+function renderList(){
+  if(!USER||!ROLE) return;
+  const list = $("list");
+  const arr = viewList();
+  $("empty").classList.toggle("hidden", arr.length>0);
+
+  $("countPill").innerText = `${arr.length} prospect(s)`;
+
+  // keep selection valid only for visible items
+  const idsVisible = new Set(arr.map(x=>x.id));
+  selected = new Set([...selected].filter(id=>idsVisible.has(id)));
+
+  $("btnDeleteSel").disabled = selected.size===0;
+
+  // cbAll state
+  const allOn = arr.length>0 && arr.every(p=>selected.has(p.id));
+  $("cbAll").checked = allOn;
+
+  list.innerHTML = arr.map(p=>renderRow(p)).join("");
+}
+function renderRow(p){
+  const checked = selected.has(p.id) ? "checked" : "";
+  const name = [p.nom,p.prenom].filter(Boolean).join(" ").trim() || "(Sans nom)";
+  const meta = [p.mobile||"", p.email||"", p.ville||""].filter(Boolean).join(" • ");
+  const st = p.statut || "Nouveau";
+
+  const badgeClass =
+    st==="RDV OK" ? "green" :
+    st==="Qualifié partiel" ? "purple" :
+    st==="À rappeler" ? "orange" :
+    st==="Pas intéressé" ? "gray" :
+    st==="Traité" ? "blue" : "gray";
+
+  return `
+  <div class="row" data-id="${p.id}">
+    <div class="rowTop">
+      <div>
+        <h3>${escapeHtml(name)}</h3>
+        <div class="meta">${escapeHtml(meta || "—")}</div>
+      </div>
+      <div class="selBox">
+        <input type="checkbox" class="cb" ${checked} onclick="toggleSel(${p.id})">
+      </div>
+    </div>
+
+    <div class="badges">
+      <span class="badge ${badgeClass}">${escapeHtml(st)}</span>
+      ${p.montant ? `<span class="badge gray">Montant: ${escapeHtml(p.montant)}</span>` : ""}
+      ${p.rdv ? `<span class="badge blue">RDV: ${escapeHtml(shorten(p.rdv,40))}</span>` : ""}
+      ${p.rappel_date ? `<span class="badge orange">Rappel: ${escapeHtml(p.rappel_date)}</span>` : ""}
+    </div>
+
+    <div class="rowActions">
+      <button class="btn ghost small" onclick="openProspect(${p.id})">✏ Modifier</button>
+      <button class="btn primary small" onclick="openProspect(${p.id}); setTimeout(()=>{document.getElementById('f_questionnaire').focus()},50)">📝 Questionnaire</button>
+    </div>
+
+    <div class="meta" style="margin-top:8px">Maj: ${escapeHtml(p.updatedAt || "—")}</div>
+  </div>`;
+}
+function toggleSel(id){
+  if(selected.has(id)) selected.delete(id); else selected.add(id);
+  $("btnDeleteSel").disabled = selected.size===0;
+}
+function toggleAllInView(){
+  const arr = viewList();
+  if($("cbAll").checked){
+    arr.forEach(p=>selected.add(p.id));
+  }else{
+    arr.forEach(p=>selected.delete(p.id));
+  }
+  $("btnDeleteSel").disabled = selected.size===0;
+  renderList();
+}
+
+/* =========================
+   PROSPECTS: CRUD
+========================= */
+function openProspect(id){
+  editingId = id;
+  $("modal").classList.remove("hidden");
+  $("formMsg").innerText="";
+
+  const p = id ? DB.find(x=>x.id===id) : null;
+
+  $("modalTitle").innerText = id ? "Modifier prospect" : "Ajouter un prospect";
+  $("btnDelete").classList.toggle("hidden", !id);
+
+  $("f_nom").value = p?.nom || "";
+  $("f_prenom").value = p?.prenom || "";
+  $("f_mobile").value = p?.mobile || "";
+  $("f_email").value = p?.email || "";
+  $("f_ville").value = p?.ville || "";
+  $("f_adresse").value = p?.adresse || "";
+  $("f_statut").value = p?.statut || "Nouveau";
+  $("f_montant").value = p?.montant || "";
+  $("f_rdv").value = p?.rdv || "";
+  $("f_questionnaire").value = p?.questionnaire || "";
+  $("f_remarque").value = p?.remarque || "";
+  $("f_rappel_date").value = p?.rappel_date || "";
+  $("f_autre_num").value = p?.autre_num || "";
+
+  syncRecallBox();
+  $("f_statut").onchange = syncRecallBox;
+}
+function syncRecallBox(){
+  const st = $("f_statut").value;
+  $("recallBox").style.display = (st==="À rappeler") ? "block" : "none";
+}
+function closeProspect(){
+  $("modal").classList.add("hidden");
+  editingId = null;
+}
+function saveProspect(){
+  const obj = {
+    id: editingId || uid(),
+    nom: $("f_nom").value.trim(),
+    prenom: $("f_prenom").value.trim(),
+    mobile: $("f_mobile").value.trim(),
+    email: $("f_email").value.trim(),
+    ville: $("f_ville").value.trim(),
+    adresse: $("f_adresse").value.trim(),
+    statut: $("f_statut").value,
+    montant: $("f_montant").value.trim(),
+    rdv: $("f_rdv").value.trim(),
+    questionnaire: $("f_questionnaire").value.trim(),
+    remarque: $("f_remarque").value.trim(),
+    rappel_date: $("f_rappel_date").value,
+    autre_num: $("f_autre_num").value.trim(),
+    updatedAt: nowStr(),
+    updatedBy: USER
+  };
+
+  if(editingId){
+    DB = DB.map(x=> x.id===editingId ? obj : x);
+    toastMsg("Prospect modifié");
+  }else{
+    DB.unshift(obj);
+    toastMsg("Prospect ajouté");
+  }
+
+  save(K_PROS, DB);
+  closeProspect();
+  renderList();
+}
+function deleteProspect(){
+  if(!editingId) return;
+  const ok = confirm("Supprimer ce prospect ?");
+  if(!ok) return;
+  DB = DB.filter(x=>x.id!==editingId);
+  save(K_PROS, DB);
+  toastMsg("Prospect supprimé");
+  closeProspect();
+  renderList();
+}
+function dedupProspects(){
+  // doublon = même mobile OU même email (si présent)
+  const seenM = new Set();
+  const seenE = new Set();
+  const before = DB.length;
+  DB = DB.filter(p=>{
+    const m = (p.mobile||"").replace(/\s+/g,"");
+    const e = (p.email||"").toLowerCase().trim();
+    let dup=false;
+    if(m){
+      if(seenM.has(m)) dup=true;
+      else seenM.add(m);
+    }
+    if(e){
+      if(seenE.has(e)) dup=true;
+      else seenE.add(e);
+    }
+    return !dup;
+  });
+  save(K_PROS, DB);
+  toastMsg(`Doublons supprimés : ${before-DB.length}`);
+  renderList();
+}
+function deleteSelected(){
+  if(selected.size===0) return;
+  const ok = confirm(`Supprimer ${selected.size} prospect(s) sélectionné(s) ?`);
+  if(!ok) return;
+  DB = DB.filter(p=>!selected.has(p.id));
+  selected.clear();
+  save(K_PROS, DB);
+  toastMsg("Suppression effectuée");
+  renderList();
+}
+function wipeAllProspects(){
+  if(!isAdmin()) return;
+  const ok = confirm("Admin: supprimer toute la base prospects ?");
+  if(!ok) return;
+  DB = [];
+  selected.clear();
+  save(K_PROS, DB);
+  toastMsg("Base supprimée");
+  renderList();
+}
+
+/* =========================
+   EXPORT EXCEL
+========================= */
+function exportExcel(){
+  const arr = viewList().map(p=>({
+    id:p.id,
+    nom:p.nom, prenom:p.prenom,
+    mobile:p.mobile, email:p.email,
+    ville:p.ville, adresse:p.adresse,
+    statut:p.statut,
+    montant:p.montant,
+    rdv:p.rdv,
+    rappel_date:p.rappel_date,
+    autre_num:p.autre_num,
+    questionnaire:p.questionnaire,
+    remarque:p.remarque,
+    updatedAt:p.updatedAt,
+    updatedBy:p.updatedBy
+  }));
+  const ws = XLSX.utils.json_to_sheet(arr);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Prospects");
+  XLSX.writeFile(wb, `CRM_Prospects_${new Date().toISOString().slice(0,10)}.xlsx`);
+}
+
+/* =========================
+   IMPORT PROSPECTS (mapping)
+========================= */
+let importRows = [];
+let importHeaders = [];
+let importPicked = new Set();
+let importMap = {}; // field -> header
+const FIELDS = [
+  {k:"nom", label:"Nom"},
+  {k:"prenom", label:"Prénom"},
+  {k:"mobile", label:"Mobile"},
+  {k:"email", label:"Email"},
+  {k:"ville", label:"Ville"},
+  {k:"adresse", label:"Adresse"},
+  {k:"statut", label:"Statut"},
+  {k:"montant", label:"Montant repère"},
+  {k:"rdv", label:"RDV"},
+  {k:"questionnaire", label:"Questionnaire"},
+  {k:"remarque", label:"Remarque"}
+];
+
+function openImport(){
+  $("importModal").classList.remove("hidden");
+  $("importMsg").innerText="";
+  $("mapGrid").innerHTML="";
+  $("previewTable").innerHTML="";
+  importRows=[]; importHeaders=[]; importPicked.clear(); importMap={};
+  $("importFile").value="";
+}
+function closeImport(){ $("importModal").classList.add("hidden"); }
+function handleImportFile(){
+  const f = $("importFile").files[0];
+  if(!f) return;
+
+  const ext = (f.name.split(".").pop()||"").toLowerCase();
+  if(ext==="xlsx" || ext==="xls"){
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const data = new Uint8Array(e.target.result);
+      const wb = XLSX.read(data, {type:"array"});
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(ws, {header:1, defval:""});
+      parseTable(json);
+    };
+    reader.readAsArrayBuffer(f);
+  }else{
+    const reader = new FileReader();
+    reader.onload = (e)=>{
+      const text = e.target.result;
+      const sep = resolveSep(text, $("txtSep").value);
+      const rows = text.split(/\r?\n/).filter(Boolean).map(line=>line.split(sep));
+      parseTable(rows);
+    };
+    reader.readAsText(f);
+  }
+}
+function resolveSep(text, chosen){
+  if(chosen && chosen!=="auto") return chosen==="\\t" ? "\t" : chosen;
+  // auto: try ; then , then |
+  const first = text.split(/\r?\n/)[0]||"";
+  const counts = {
+    ";": (first.match(/;/g)||[]).length,
+    ",": (first.match(/,/g)||[]).length,
+    "|": (first.match(/\|/g)||[]).length,
+    "\t": (first.match(/\t/g)||[]).length
+  };
+  return Object.entries(counts).sort((a,b)=>b[1]-a[1])[0][0] || ",";
+}
+function parseTable(table){
+  if(!table || !table.length){ $("importMsg").innerText="Fichier vide."; return; }
+  importHeaders = table[0].map(h=>String(h||"").trim());
+  importRows = table.slice(1).map(r=>{
+    const o = {};
+    importHeaders.forEach((h,i)=>o[h]=String(r[i]??"").trim());
+    return o;
+  });
+  importPicked = new Set(importRows.map((_,i)=>i)); // all selected by default
+  renderMapping();
+  renderPreview();
+  $("importMsg").innerText = `${importRows.length} ligne(s) détectée(s).`;
+}
+function renderMapping(){
+  // default mapping by fuzzy match
+  importMap = {};
+  const lowerH = importHeaders.map(h=>h.toLowerCase());
+  const guess = (key)=>{
+    const wants = {
+      nom:["nom","name","last"],
+      prenom:["prénom","prenom","first"],
+      mobile:["mobile","tel","téléphone","phone","gsm"],
+      email:["email","mail"],
+      ville:["ville","city"],
+      adresse:["adresse","address"],
+      statut:["statut","status"],
+      montant:["montant","amount","repere","repère"],
+      rdv:["rdv","rendez","appointment"],
+      questionnaire:["questionnaire","notes","info"],
+      remarque:["remarque","comment","commentaire"]
+    }[key] || [key];
+    for(const w of wants){
+      const idx = lowerH.findIndex(x=>x.includes(w));
+      if(idx>=0) return importHeaders[idx];
+    }
+    return "";
+  };
+
+  $("mapGrid").innerHTML = `
+    <b style="font-weight:950">Mapping colonnes</b>
+    <div class="two" style="margin-top:8px">
+      ${FIELDS.map(f=>{
+        const g = guess(f.k);
+        importMap[f.k]=g;
+        return `
+        <div>
+          <label>${escapeHtml(f.label)}</label>
+          <select class="input" onchange="setMap('${f.k}', this.value)">
+            <option value="">(ignorer)</option>
+            ${importHeaders.map(h=>`<option ${h===g?"selected":""}>${escapeHtml(h)}</option>`).join("")}
+          </select>
+        </div>`;
+      }).join("")}
+    </div>
+    <div class="hint" style="margin-top:8px">Vous pouvez ignorer des colonnes. “Mobile” conseillé pour dédoublonner ensuite.</div>
+  `;
+}
+function setMap(k,v){ importMap[k]=v; }
+function pickAllRows(on){
+  importPicked = new Set(on ? importRows.map((_,i)=>i) : []);
+  renderPreview();
+}
+function renderPreview(){
+  const max = Math.min(25, importRows.length);
+  const cols = importHeaders.slice(0, Math.min(8, importHeaders.length));
+  let html = `<table style="width:100%;border-collapse:collapse;font-size:12px">
+    <thead><tr>
+      <th style="text-align:left;padding:8px;border-bottom:1px solid rgba(0,0,0,.12)">✔</th>
+      ${cols.map(c=>`<th style="text-align:left;padding:8px;border-bottom:1px solid rgba(0,0,0,.12)">${escapeHtml(c)}</th>`).join("")}
+    </tr></thead><tbody>`;
+
+  for(let i=0;i<max;i++){
+    const r = importRows[i];
+    const ck = importPicked.has(i) ? "checked" : "";
+    html += `<tr>
+      <td style="padding:8px;border-bottom:1px solid rgba(0,0,0,.08)">
+        <input type="checkbox" ${ck} onchange="togglePick(${i}, this.checked)">
+      </td>
+      ${cols.map(c=>`<td style="padding:8px;border-bottom:1px solid rgba(0,0,0,.08)">${escapeHtml(r[c]||"")}</td>`).join("")}
+    </tr>`;
+  }
+  html += `</tbody></table>`;
+  $("previewTable").innerHTML = html;
+}
+function togglePick(i,on){
+  if(on) importPicked.add(i); else importPicked.delete(i);
+}
+function importNow(){
+  if(!importRows.length){ $("importMsg").innerText="Aucune donnée."; return; }
+  const picked = [...importPicked];
+  if(!picked.length){ $("importMsg").innerText="Aucune ligne sélectionnée."; return; }
+
+  const newOnes = [];
+  for(const i of picked){
+    const r = importRows[i];
+    const obj = {
+      id: uid(),
+      nom: r[importMap.nom]||"",
+      prenom: r[importMap.prenom]||"",
+      mobile: r[importMap.mobile]||"",
+      email: r[importMap.email]||"",
+      ville: r[importMap.ville]||"",
+      adresse: r[importMap.adresse]||"",
+      statut: (r[importMap.statut]||"Nouveau") || "Nouveau",
+      montant: r[importMap.montant]||"",
+      rdv: r[importMap.rdv]||"",
+      questionnaire: r[importMap.questionnaire]||"",
+      remarque: r[importMap.remarque]||"",
+      rappel_date:"",
+      autre_num:"",
+      updatedAt: nowStr(),
+      updatedBy: USER
+    };
+    newOnes.push(obj);
+  }
+  DB = newOnes.concat(DB);
+  save(K_PROS, DB);
+  toastMsg(`${newOnes.length} prospect(s) importé(s)`);
+  closeImport();
+  renderList();
+}
+
+/* =========================
+   CHAT: OPEN/CLOSE + BADGE
+========================= */
+function openChat(){
+  if(!USER||!ROLE) return;
+  $("chatModal").classList.remove("hidden");
+  renderChat();
+
+  // mark read for this ROLE
+  setRead(ROLE, Date.now());
+  renderChatBadge();
+}
+function closeChat(){
+  $("chatModal").classList.add("hidden");
+}
+function computeUnreadForRole(role){
+  const lr = lastRead(role);
+  const count = CHAT.filter(m=>m.ts>lr && m.roleTarget && m.roleTarget.includes(role)).length
+    + CHAT.filter(m=>m.ts>lr && (!m.roleTarget || m.roleTarget.length===0)).length;
+  return count;
+}
+function renderChatBadge(){
+  if(!USER||!ROLE) { $("chatBadge").style.display="none"; $("chatBadge2").style.display="none"; return; }
+  const n = computeUnreadForRole(ROLE);
+  const show = n>0;
+  $("chatBadge").style.display = show ? "inline-block" : "none";
+  $("chatBadge2").style.display = show ? "inline-block" : "none";
+  if(show){
+    $("chatBadge").innerText = n>9 ? "9+" : String(n);
+    $("chatBadge2").innerText = n>9 ? "9+" : String(n);
+  }
+}
+
+/* =========================
+   CHAT: SEND/REPLY/EDIT/DELETE (local)
+========================= */
+function clearReply(){
+  replyTo = null;
+  $("replyPreview").classList.add("hidden");
+  $("replyPreview").innerText="";
+}
+function setReply(m){
+  replyTo = {id:m.id, user:m.user, text:m.text};
+  $("replyPreview").classList.remove("hidden");
+  $("replyPreview").innerText = `Réponse à ${m.user}: ${shorten(m.text||"", 90)}`;
+  $("chatTxt").focus();
+}
+function sendChat(){
+  if(!USER||!ROLE) return;
+  const txt = ($("chatTxt").value||"").trim();
+  const f = $("chatFile").files[0];
+
+  if(!txt && !f){ toastMsg("Message vide"); return; }
+
+  let att = null;
+  if(f){
+    const url = URL.createObjectURL(f);
+    att = {
+      name: f.name,
+      type: f.type,
+      url
+    };
+  }
+
+  const msg = {
+    id: uid(),
+    ts: Date.now(),
+    user: USER,
+    role: ROLE,
+    text: txt,
+    reply: replyTo ? {id: replyTo.id, user: replyTo.user, text: replyTo.text} : null,
+    att,
+    // cibler roles (TA1, TA2, Admin...) -> ici: tout le monde
+    roleTarget: []
+  };
+
+  CHAT.push(msg);
+  save(K_CHAT, CHAT);
+
+  $("chatTxt").value="";
+  $("chatFile").value="";
+  clearReply();
+  renderChat();
+  renderChatBadge();
+}
+function canEditMsg(m){
+  if(isAdmin()) return true;
+  return m.user===USER;
+}
+function editMsg(id){
+  const m = CHAT.find(x=>x.id===id);
+  if(!m) return;
+  if(!canEditMsg(m)) return alert("Non autorisé");
+  const t = prompt("Modifier le message :", m.text||"");
+  if(t===null) return;
+  m.text = t;
+  m.edited = true;
+  save(K_CHAT, CHAT);
+  renderChat();
+}
+function deleteMsg(id){
+  const m = CHAT.find(x=>x.id===id);
+  if(!m) return;
+  if(!canEditMsg(m)) return alert("Non autorisé");
+  const ok = confirm("Supprimer ce message pour tous ?");
+  if(!ok) return;
+  CHAT = CHAT.filter(x=>x.id!==id);
+  save(K_CHAT, CHAT);
+  renderChat();
+  renderChatBadge();
+}
+function adminClearChat(){
+  if(!isAdmin()) return;
+  const ok = confirm("Admin: supprimer tout le chat ?");
+  if(!ok) return;
+  CHAT = [];
+  save(K_CHAT, CHAT);
+  renderChat();
+  renderChatBadge();
+}
+function renderChat(){
+  const log = $("chatLog");
+  log.innerHTML = "";
+
+  const byId = new Map(CHAT.map(m=>[m.id,m]));
+
+  CHAT.slice(-400).forEach(m=>{
+    const wrap = document.createElement("div");
+    wrap.className = "msg";
+
+    // header
+    const top = document.createElement("div");
+    top.className = "msgTop";
+    top.innerHTML = `
+      <div class="who">${escapeHtml(m.user)} <span class="muted">(${escapeHtml(m.role)})</span></div>
+      <div class="time">${new Date(m.ts).toLocaleString()}${m.edited ? " • modifié" : ""}</div>
+    `;
+    wrap.appendChild(top);
+
+    // reply
+    if(m.reply){
+      const rb = document.createElement("div");
+      rb.className = "replyBox";
+      rb.textContent = `↩ ${m.reply.user}: ${shorten(m.reply.text||"", 120)}`;
+      wrap.appendChild(rb);
+    }
+
+    // bubble
+    const b = document.createElement("div");
+    b.className = "bubble";
+    b.textContent = m.text || "";
+    // dblclick => reply
+    b.ondblclick = ()=>setReply(m);
+    // long press mobile => reply
+    let pressT=null;
+    b.ontouchstart = ()=>{ pressT=setTimeout(()=>setReply(m), 450); };
+    b.ontouchend = ()=>{ clearTimeout(pressT); };
+    wrap.appendChild(b);
+
+    // attachment
+    if(m.att && m.att.url){
+      const aw = document.createElement("div");
+      aw.className="attWrap";
+      if((m.att.type||"").startsWith("image/")){
+        const im = document.createElement("img");
+        im.className="attImg";
+        im.src = m.att.url;
+        im.alt = m.att.name||"";
+        aw.appendChild(im);
+      }else if((m.att.type||"").startsWith("audio/")){
+        const au = document.createElement("audio");
+        au.className="attAudio";
+        au.controls = true;
+        au.src = m.att.url;
+        aw.appendChild(au);
+      }else{
+        const a = document.createElement("a");
+        a.href = m.att.url;
+        a.target = "_blank";
+        a.textContent = "Fichier: " + (m.att.name||"ouvrir");
+        aw.appendChild(a);
+      }
+      wrap.appendChild(aw);
+    }
+
+    // buttons
+    const btns = document.createElement("div");
+    btns.className="msgBtns";
+    btns.innerHTML = `
+      <button class="btn ghost small" onclick="setReply(${m.id})">↩ Répondre</button>
+      ${canEditMsg(m) ? `<button class="btn ghost small" onclick="editMsg(${m.id})">✏ Modifier</button>` : ""}
+      ${canEditMsg(m) ? `<button class="btn danger small" onclick="deleteMsg(${m.id})">🗑 Supprimer</button>` : ""}
+    `;
+    wrap.appendChild(btns);
+
+    log.appendChild(wrap);
+  });
+
+  log.scrollTop = log.scrollHeight;
+}
+
+/* helper for onclick reply (needs msg object) */
+function setReply(id){
+  const m = CHAT.find(x=>x.id===id);
+  if(m) setReply(m);
+}
+
+/* =========================
+   VICIDIAL IMPORT (reporting visible directement)
+========================= */
+function resetVicidial(){
+  $("vTotal").innerText="0";
+  $("vRDV").innerText="0";
+  $("vQualif").innerText="0";
+  $("vStats").innerHTML="";
+  $("vRDVList").innerHTML="";
+  $("vicLast").innerText="Aucun reporting chargé";
+  localStorage.removeItem(K_LAST_VIC);
+  toastMsg("Reporting reset");
+}
+function restoreVicLast(){
+  const last = localStorage.getItem(K_LAST_VIC);
+  if(last) $("vicLast").innerText = last;
+}
+function importVicidial(){
+  const f = $("vicFile").files[0];
+  if(!f){ toastMsg("Choisir CSV VICIdial"); return; }
+
+  const day = $("vicDay").value;   // YYYY-MM-DD
+  const month = $("vicMonth").value; // YYYY-MM
+
+  const reader = new FileReader();
+  reader.onload = (e)=>{
+    const text = e.target.result;
+    const lines = text.split(/\r?\n/).filter(Boolean);
+
+    // Comptage
+    const byStatus = {};
+    let total = 0;
+    let rdvCount = 0;
+    let qualifCount = 0;
+    let lastTs = 0;
+
+    // RDV OK only
+    const rdvRows = [];
+    const rdvSeen = new Set(); // dedup by (user+phone)
+
+    // Try to detect separator: VICIdial often uses commas
+    const sep = resolveSep(text, "auto");
+
+    // NOTE: We assume columns:
+    // 0=user, 1=status, 2=phone, 3=call_date, 4=recording_or_link (optional)
+    // If your export has different order, you can change indexes below.
+    for(let i=1;i<lines.length;i++){
+      const c = lines[i].split(sep);
+      if(c.length<4) continue;
+
+      const user = (c[0]||"").trim();
+      const stRaw = (c[1]||"").trim();
+      const phone = (c[2]||"").trim();
+      const callDate = (c[3]||"").trim();
+      const rec = (c[4]||"").trim();
+
+      if(!user || !callDate) continue;
+
+      const d = new Date(callDate);
+      if(!isNaN(d)){
+        const isoDay = d.toISOString().slice(0,10);
+        const isoMonth = d.toISOString().slice(0,7);
+        if(day && isoDay!==day) continue;
+        if(month && isoMonth!==month) continue;
+        lastTs = Math.max(lastTs, d.getTime());
+      }else{
+        // if date invalid, we keep the row but won't count lastTs
+        if(day || month) continue; // if filtering and date invalid, skip
+      }
+
+      total++;
+
+      const st = VIC_MAP[stRaw] || stRaw || "Autre";
+      byStatus[st] = (byStatus[st]||0) + 1;
+
+      if(st==="RDV OK"){
+        rdvCount++;
+        const k = user+"_"+phone;
+        if(!rdvSeen.has(k)){
+          rdvSeen.add(k);
+          rdvRows.push({user, phone, rec, rawStatus: stRaw});
+        }
+      }
+      if(st==="Qualifié partiel"){
+        qualifCount++;
+      }
+    }
+
+    $("vTotal").innerText = String(total);
+    $("vRDV").innerText = String(rdvCount);
+    $("vQualif").innerText = String(qualifCount);
+
+    // last update pill
+    if(lastTs){
+      const lastStr = "Dernière mise à jour VICIdial : " + new Date(lastTs).toLocaleString();
+      $("vicLast").innerText = lastStr;
+      localStorage.setItem(K_LAST_VIC, lastStr);
+    }else{
+      $("vicLast").innerText = "Reporting chargé (date non détectée)";
+      localStorage.setItem(K_LAST_VIC, $("vicLast").innerText);
+    }
+
+    // render stats
+    const stKeys = Object.keys(byStatus).sort((a,b)=>byStatus[b]-byStatus[a]);
+    $("vStats").innerHTML = stKeys.length ? stKeys.map(k=>{
+      return `<div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,.06)">
+        <b>${escapeHtml(k)}</b><span>${byStatus[k]}</span>
+      </div>`;
+    }).join("") : `<div class="hint">Aucune ligne (filtre trop strict ?)</div>`;
+
+    // render rdv list
+    if(!rdvRows.length){
+      $("vRDVList").innerHTML = `<div class="hint">Aucun RDV OK</div>`;
+    }else{
+      $("vRDVList").innerHTML = rdvRows.map((r,idx)=>{
+        const link = (r.rec && (r.rec.startsWith("http") || r.rec.startsWith("sip") || r.rec.startsWith("www"))) ? r.rec : "";
+        return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(0,0,0,.06)">
+          <div>
+            <b>Agent ${escapeHtml(r.user)}</b> — ${escapeHtml(r.phone||"")}
+            <div class="hint">Source: ${escapeHtml(r.rawStatus||"")}</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+            ${link?`<a class="btn ghost small" target="_blank" href="${escapeAttr(link)}">Lien RDV</a>`:""}
+            <button class="btn ghost small" onclick="editRdvRow(${idx})">✏</button>
+            <button class="btn danger small" onclick="delRdvRow(${idx})">🗑</button>
+          </div>
+        </div>`;
+      }).join("");
+      // store rdvRows in window for edit/delete UI (not persisted)
+      window.__rdvRows = rdvRows;
+      window.__rdvRender = ()=>{ // re-render without re-import
+        const rr = window.__rdvRows || [];
+        if(!rr.length){ $("vRDVList").innerHTML = `<div class="hint">Aucun RDV OK</div>`; return; }
+        $("vRDVList").innerHTML = rr.map((r,idx)=>{
+          const link = (r.rec && (r.rec.startsWith("http") || r.rec.startsWith("sip") || r.rec.startsWith("www"))) ? r.rec : "";
+          return `<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;padding:8px;border-bottom:1px solid rgba(0,0,0,.06)">
+            <div>
+              <b>Agent ${escapeHtml(r.user)}</b> — ${escapeHtml(r.phone||"")}
+              <div class="hint">Source: ${escapeHtml(r.rawStatus||"")}</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+              ${link?`<a class="btn ghost small" target="_blank" href="${escapeAttr(link)}">Lien RDV</a>`:""}
+              <button class="btn ghost small" onclick="editRdvRow(${idx})">✏</button>
+              <button class="btn danger small" onclick="delRdvRow(${idx})">🗑</button>
+            </div>
+          </div>`;
+        }).join("");
+      };
+    }
+
+    toastMsg("Reporting importé");
+  };
+  reader.readAsText(f);
+}
+function editRdvRow(i){
+  const rr = window.__rdvRows || [];
+  const r = rr[i];
+  if(!r) return;
+  const t = prompt("Modifier (Agent / Téléphone / Lien)", `${r.user} | ${r.phone} | ${r.rec||""}`);
+  if(t===null) return;
+  const parts = t.split("|").map(x=>x.trim());
+  if(parts[0]) r.user = parts[0];
+  if(parts[1]) r.phone = parts[1];
+  if(parts[2]!==undefined) r.rec = parts.slice(2).join("|").trim();
+  rr[i]=r;
+  window.__rdvRows = rr;
+  window.__rdvRender && window.__rdvRender();
+}
+function delRdvRow(i){
+  const rr = window.__rdvRows || [];
+  const ok = confirm("Supprimer cette ligne RDV (affichage) ?");
+  if(!ok) return;
+  rr.splice(i,1);
+  window.__rdvRows = rr;
+  window.__rdvRender && window.__rdvRender();
+}
+
+/* =========================
+   HELPERS
+========================= */
+function shorten(s,n){
+  s = String(s||"");
+  return s.length>n ? s.slice(0,n-1)+"…" : s;
+}
+function escapeHtml(s){
+  return String(s??"").replace(/[&<>"']/g, m=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[m]));
+}
+function escapeAttr(s){
+  return String(s??"").replace(/"/g,"&quot;").replace(/</g,"&lt;");
+}
+</script>
+</body>
+</html>

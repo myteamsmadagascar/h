@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CRM Reporting – Import, Mapping & Statistiques</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+<style>
+:root{
+  --blue:#0b57d0;--green:#22c55e;--red:#ef4444;
+  --bg:#f4f7ff;--card:#fff;--muted:#5b6b85
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui;background:var(--bg);color:#0b1220}
+header{background:var(--blue);color:#fff;padding:14px;font-weight:1000}
+.wrap{max-width:1500px;margin:auto;padding:14px}
+.card{background:var(--card);border-radius:16px;padding:14px;margin-bottom:14px;
+  box-shadow:0 12px 36px rgba(0,0,0,.08)}
+button{padding:8px 14px;border-radius:12px;border:none;font-weight:900;cursor:pointer}
+.primary{background:linear-gradient(90deg,#00c2ff,var(--green))}
+.ghost{background:#eef3ff}
+.danger{background:var(--red);color:#fff}
+.badge{padding:4px 10px;border-radius:999px;background:#eef3ff;font-weight:900}
+input,select,textarea{padding:7px 10px;border-radius:10px;border:1px solid #cfd7e6;font-weight:800}
+textarea{width:100%;min-height:34px}
+table{width:100%;border-collapse:collapse}
+th,td{padding:6px;border-bottom:1px solid #eef2ff;font-size:12px;vertical-align:top}
+th{background:#eef3ff;position:sticky;top:0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.muted{color:var(--muted);font-size:12px}
+.kpis{display:flex;gap:10px;flex-wrap:wrap}
+.kpi{background:#f0f4ff;border-radius:12px;padding:10px 12px;font-weight:1000}
+.modalBack{position:fixed;inset:0;background:rgba(0,0,0,.55);
+  display:none;align-items:center;justify-content:center;z-index:9999}
+.modal{background:#fff;width:min(1000px,100%);border-radius:18px;overflow:hidden}
+.modalHead,.modalFoot{padding:14px;background:#f7fbff}
+.modalBody{padding:14px}
+.mapGrid{display:grid;grid-template-columns:repeat(12,1fr);gap:10px}
+.mapItem{grid-column:span 6}
+@media(max-width:900px){.mapItem{grid-column:span 12}}
+</style>
+</head>
+
+<body>
+<header> CRM Reporting — Import + Mapping + Statistiques</header>
+
+<div class="wrap">
+
+<!-- ACTIONS -->
+<div class="card row">
+  <button class="primary" onclick="pickFile('replace')">Importer reporting</button>
+  <button class="ghost" onclick="pickFile('append')">Injecter</button>
+  <button class="ghost" onclick="validateSelected()"> Valider sélection</button>
+  <button class="ghost" onclick="validateAll()"> Valider tout</button>
+  <button class="danger" onclick="deleteSelected()"> Supprimer</button>
+  <button class="ghost" onclick="exportExcel()">Exporter Excel</button>
+  <span class="badge" id="loaded">0 ligne</span>
+  <input type="file" id="file" hidden accept=".csv,.tsv,.txt">
+</div>
+
+<!-- KPIS -->
+<div class="card kpis" id="kpis"></div>
+
+<!-- GRAPH -->
+<div class="card">
+  <div class="row">
+    <button class="ghost" onclick="setPeriod('day')">Jour</button>
+    <button class="ghost" onclick="setPeriod('week')">Semaine</button>
+    <button class="ghost" onclick="setPeriod('month')">Mois</button>
+  </div>
+  <canvas id="chart" height="120"></canvas>
+</div>
+
+<!-- TABLE -->
+<div class="card" style="max-height:600px;overflow:auto">
+<table>
+<thead>
+<tr>
+<th><input type="checkbox" onclick="toggleAll(this)"></th>
+<th>Date</th><th>Agent</th><th>Téléphone</th><th>Statut</th>
+<th>Durée</th><th>Enreg.</th>
+<th>Questionnaire</th><th>Réponse</th><th>Autres</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+</div>
+
+<!-- MAPPING MODAL -->
+<div class="modalBack" id="mapBack">
+<div class="modal">
+<div class="modalHead"><b>Mapping des colonnes</b></div>
+<div class="modalBody">
+  <div class="mapGrid" id="mapGrid"></div>
+</div>
+<div class="modalFoot row">
+  <button class="ghost" onclick="closeMap()">Annuler</button>
+  <button class="primary" onclick="acceptImport()">Accepter l’import</button>
+</div>
+</div>
+</div>
+
+<script>
+/* ================== DATA ================== */
+const STORE="CRM_REPORT_FINAL_V1";
+let DATA=JSON.parse(localStorage.getItem(STORE)||"[]");
+let KEYS=new Set(DATA.map(r=>r.__key));
+let PERIOD="day", chart;
+
+/* ================== IMPORT ================== */
+let pending={mode:"replace",headers:[],rows:[]};
+let mapping={};
+
+const FIELDS=[
+  "call_date","phone_number_dialed","status_name","user",
+  "length_in_sec","recording_location"
+];
+const REQUIRED=new Set(["call_date","phone_number_dialed","status_name","user"]);
+
+function pickFile(mode){file.dataset.mode=mode;file.click();}
+file.onchange=async()=>{
+  const f=file.files[0]; if(!f)return;
+  pending.mode=file.dataset.mode;
+  const txt=await f.text();
+  const lines=txt.replace(/\r/g,"").split("\n").filter(l=>l.trim());
+  const sep=lines[0].includes("\t")?"\t":",";
+  pending.headers=lines[0].split(sep);
+  pending.rows=lines.slice(1).map(l=>{
+    const o={},c=l.split(sep);
+    pending.headers.forEach((h,i)=>o[h]=c[i]||"");
+    return o;
+  });
+  openMap();
+  file.value="";
+};
+
+function openMap(){
+  mapBack.style.display="flex";
+  mapGrid.innerHTML=FIELDS.map(f=>`
+    <div class="mapItem">
+      <label>${f}${REQUIRED.has(f)?" *":""}</label>
+      <select onchange="mapping['${f}']=this.value">
+        <option value="">—</option>
+        ${pending.headers.map(h=>`<option>${h}</option>`).join("")}
+      </select>
+    </div>
+  `).join("");
+}
+
+function closeMap(){mapBack.style.display="none";}
+
+function acceptImport(){
+  for(const r of REQUIRED){if(!mapping[r]){alert("Champ requis manquant : "+r);return}}
+  if(pending.mode==="replace"){DATA=[];KEYS.clear();}
+  pending.rows.forEach(src=>{
+    const r={};
+    FIELDS.forEach(f=>r[f]=mapping[f]?src[mapping[f]]:"");
+    r.__key=[r.phone_number_dialed,r.call_date,r.status_name].join("|");
+    if(KEYS.has(r.__key))return;
+    r.validated=false;r.q="";r.a="";r.o="";
+    DATA.push(r);KEYS.add(r.__key);
+  });
+  persist();closeMap();render();
+}
+
+/* ================== TABLE ================== */
+function render(){
+  loaded.textContent=DATA.length+" lignes";
+  tbody.innerHTML=DATA.map(r=>`
+<tr data-key="${r.__key}">
+<td><input type="checkbox" class="sel"></td>
+<td>${r.call_date}</td>
+<td><span class="badge">${r.user}</span></td>
+<td>${r.phone_number_dialed}</td>
+<td>${r.status_name}</td>
+<td>${r.length_in_sec||""}</td>
+<td>${r.recording_location?`<a href="${r.recording_location}" target="_blank"></a>`:"—"}</td>
+<td><textarea>${r.q||""}</textarea></td>
+<td><textarea>${r.a||""}</textarea></td>
+<td><textarea>${r.o||""}</textarea></td>
+<td><button class="ghost" onclick="validateRow(this)"></button></td>
+</tr>`).join("")||"<tr><td colspan=11 class='muted'>Aucune donnée</td></tr>";
+  renderStats();
+}
+
+/* ================== ACTIONS ================== */
+function toggleAll(c){document.querySelectorAll(".sel").forEach(x=>x.checked=c.checked);}
+function validateRow(b){
+  const tr=b.closest("tr");const r=find(tr);
+  const t=tr.querySelectorAll("textarea");
+  r.q=t[0].value;r.a=t[1].value;r.o=t[2].value;r.validated=true;
+  persist();render();
+}
+function validateSelected(){
+  document.querySelectorAll(".sel:checked").forEach(c=>{
+    const r=find(c.closest("tr"));r.validated=true;
+  });
+  persist();render();
+}
+function validateAll(){DATA.forEach(r=>r.validated=true);persist();render();}
+function deleteSelected(){
+  DATA=DATA.filter(r=>!document.querySelector(`tr[data-key="${r.__key}"] .sel`)?.checked);
+  KEYS=new Set(DATA.map(r=>r.__key));
+  persist();render();
+}
+function find(tr){return DATA.find(r=>r.__key===tr.dataset.key);}
+
+/* ================== STATS ================== */
+function periodKey(d){
+  const x=new Date(d);
+  if(PERIOD==="day")return x.toISOString().slice(0,10);
+  if(PERIOD==="month")return x.toISOString().slice(0,7);
+  const w=Math.ceil((((x-new Date(x.getFullYear(),0,1))/86400000)+new Date(x.getFullYear(),0,1).getDay()+1)/7);
+  return x.getFullYear()+"-W"+w;
+}
+function renderStats(){
+  const rows=DATA.filter(r=>r.validated);
+  const by={};
+  rows.forEach(r=>{
+    const k=periodKey(r.call_date);
+    by[k]=(by[k]||0)+1;
+  });
+  kpis.innerHTML=`
+    <div class="kpi">Appels validés: ${rows.length}</div>
+    <div class="kpi">Agents: ${new Set(rows.map(r=>r.user)).size}</div>
+  `;
+  if(chart)chart.destroy();
+  chart=new Chart(document.getElementById("chart"),{
+    type:"bar",
+    data:{labels:Object.keys(by),datasets:[{data:Object.values(by)}]},
+    options:{plugins:{legend:{display:false}}}
+  });
+}
+function setPeriod(p){PERIOD=p;renderStats();}
+
+/* ================== EXPORT ================== */
+function exportExcel(){
+  const ws=XLSX.utils.json_to_sheet(DATA);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"reporting");
+  XLSX.writeFile(wb,"reporting.xlsx");
+}
+
+/* ================== STORAGE ================== */
+function persist(){localStorage.setItem(STORE,JSON.stringify(DATA));}
+
+render();
+</script>
+</body>
+</html>
