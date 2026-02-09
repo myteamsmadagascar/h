@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CRM Reporting – Import, Mapping & Statistiques</title>
+<title>CRM Reporting â€“ Import, Mapping & Statistiques</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -45,7 +45,7 @@ th{background:#eef3ff;position:sticky;top:0}
 </head>
 
 <body>
-<header> CRM Reporting — Import + Mapping + Statistiques</header>
+<header> CRM Reporting â€” Import + Mapping + Statistiques</header>
 
 <div class="wrap">
 
@@ -53,7 +53,7 @@ th{background:#eef3ff;position:sticky;top:0}
 <div class="card row">
   <button class="primary" onclick="pickFile('replace')">Importer reporting</button>
   <button class="ghost" onclick="pickFile('append')">Injecter</button>
-  <button class="ghost" onclick="validateSelected()"> Valider sélection</button>
+  <button class="ghost" onclick="validateSelected()"> Valider sÃ©lection</button>
   <button class="ghost" onclick="validateAll()"> Valider tout</button>
   <button class="danger" onclick="deleteSelected()"> Supprimer</button>
   <button class="ghost" onclick="exportExcel()">Exporter Excel</button>
@@ -80,9 +80,9 @@ th{background:#eef3ff;position:sticky;top:0}
 <thead>
 <tr>
 <th><input type="checkbox" onclick="toggleAll(this)"></th>
-<th>Date</th><th>Agent</th><th>Téléphone</th><th>Statut</th>
-<th>Durée</th><th>Enreg.</th>
-<th>Questionnaire</th><th>Réponse</th><th>Autres</th><th>Action</th>
+<th>Date</th><th>Agent</th><th>TÃ©lÃ©phone</th><th>Statut</th>
+<th>DurÃ©e</th><th>Enreg.</th>
+<th>Questionnaire</th><th>RÃ©ponse</th><th>Autres</th><th>Action</th>
 </tr>
 </thead>
 <tbody id="tbody"></tbody>
@@ -100,7 +100,7 @@ th{background:#eef3ff;position:sticky;top:0}
 </div>
 <div class="modalFoot row">
   <button class="ghost" onclick="closeMap()">Annuler</button>
-  <button class="primary" onclick="acceptImport()">Accepter l’import</button>
+  <button class="primary" onclick="acceptImport()">Accepter lâ€™import</button>
 </div>
 </div>
 </div>
@@ -145,7 +145,7 @@ function openMap(){
     <div class="mapItem">
       <label>${f}${REQUIRED.has(f)?" *":""}</label>
       <select onchange="mapping['${f}']=this.value">
-        <option value="">—</option>
+        <option value="">â€”</option>
         ${pending.headers.map(h=>`<option>${h}</option>`).join("")}
       </select>
     </div>
@@ -179,12 +179,12 @@ function render(){
 <td>${r.phone_number_dialed}</td>
 <td>${r.status_name}</td>
 <td>${r.length_in_sec||""}</td>
-<td>${r.recording_location?`<a href="${r.recording_location}" target="_blank"></a>`:"—"}</td>
+<td>${r.recording_location?`<a href="${r.recording_location}" target="_blank"></a>`:"â€”"}</td>
 <td><textarea>${r.q||""}</textarea></td>
 <td><textarea>${r.a||""}</textarea></td>
 <td><textarea>${r.o||""}</textarea></td>
 <td><button class="ghost" onclick="validateRow(this)"></button></td>
-</tr>`).join("")||"<tr><td colspan=11 class='muted'>Aucune donnée</td></tr>";
+</tr>`).join("")||"<tr><td colspan=11 class='muted'>Aucune donnÃ©e</td></tr>";
   renderStats();
 }
 
@@ -226,7 +226,7 @@ function renderStats(){
     by[k]=(by[k]||0)+1;
   });
   kpis.innerHTML=`
-    <div class="kpi">Appels validés: ${rows.length}</div>
+    <div class="kpi">Appels validÃ©s: ${rows.length}</div>
     <div class="kpi">Agents: ${new Set(rows.map(r=>r.user)).size}</div>
   `;
   if(chart)chart.destroy();
@@ -252,4 +252,5 @@ function persist(){localStorage.setItem(STORE,JSON.stringify(DATA));}
 render();
 </script>
 </body>
+
 </html>
